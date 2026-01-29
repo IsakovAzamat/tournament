@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SCRIMS // Arena</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Exo+2:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                colors: {
+                    primary: '#00ff88',
+                    secondary: '#0088ff',
+                    accent: '#ff0055',
+                    dark: '#0a0e17',
+                    card: '#151922',
+                },
+                fontFamily: {
+                    display: ['Orbitron', 'sans-serif'],
+                    body: ['Exo 2', 'sans-serif'],
+                },
+                animation: {
+                    'grid-move': 'gridMove 20s linear infinite',
+                    'pulse-glow': 'pulseGlow 2s ease-in-out infinite',
+                    'slide-up': 'slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards',
+                    'fade-in': 'fadeIn 0.3s ease-out',
+                    'shine': 'shine 1s ease-in-out',
+                },
+                keyframes: {
+                    gridMove: {
+                        '0%': { transform: 'translate(0, 0)' },
+                        '100%': { transform: 'translate(50px, 50px)' },
+                    },
+                    pulseGlow: {
+                        '0%, 100%': { opacity: '1' },
+                        '50%': { opacity: '0.5' },
+                    },
+                    slideUp: {
+                        '0%': { opacity: '0', transform: 'translateY(30px)' },
+                        '100%': { opacity: '1', transform: 'translateY(0)' },
+                    },
+                    fadeIn: {
+                        '0%': { opacity: '0' },
+                        '100%': { opacity: '1' },
+                    },
+                    shine: {
+                        '0%': { left: '-100%' },
+                        '100%': { left: '100%' },
+                    },
+                },
+            }
+        }
+    }
+  </script>
+  <style>
+    body {
+        font-family: 'Exo 2', sans-serif;
+    }
+
+    .bg-grid {
+        background-image:
+            linear-gradient(rgba(0, 255, 136, 0.03) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(0, 255, 136, 0.03) 1px, transparent 1px);
+        background-size: 50px 50px;
+    }
+
+    .card-shine::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(0, 255, 136, 0.1), transparent);
+    }
+
+    .card-shine:hover::before {
+        animation: shine 0.5s ease-in-out;
+    }
+
+    .btn-ripple::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.1);
+        transform: translate(-50%, -50%);
+        transition: width 0.6s, height 0.6s;
+    }
+
+    .btn-ripple:hover::before {
+        width: 300px;
+        height: 300px;
+    }
+
+    .text-gradient {
+        background: linear-gradient(135deg, #00ff88, #0088ff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .stagger-1 { animation-delay: 0.1s; }
+    .stagger-2 { animation-delay: 0.2s; }
+    .stagger-3 { animation-delay: 0.3s; }
+    .stagger-4 { animation-delay: 0.4s; }
+    .stagger-5 { animation-delay: 0.5s; }
+    .stagger-6 { animation-delay: 0.6s; }
+    .stagger-7 { animation-delay: 0.7s; }
+    .stagger-8 { animation-delay: 0.8s; }
+    .stagger-9 { animation-delay: 0.9s; }
+  </style>
+</head>
+<body class="bg-dark text-white overflow-x-hidden">
+<!-- Animated Grid Background -->
+<div class="bg-grid fixed inset-0 z-0 animate-grid-move"></div>
+
+<div class="relative z-10 container mx-auto px-4 py-12 max-w-7xl">
+  <!-- Header -->
+  <header class="mb-16 text-center">
+    <h1 class="font-display text-6xl md:text-7xl lg:text-8xl font-black tracking-tighter mb-2 text-gradient uppercase">
+      SCRIMS
+    </h1>
+    <p class="font-display text-xs md:text-sm tracking-[0.3em] text-primary uppercase">
+      // Competitive Arena
+    </p>
+  </header>
+
+  <!-- Controls Bar -->
+  <div class="bg-gradient-to-br from-card to-card/80 border border-primary/10 rounded-xl p-6 mb-8 backdrop-blur-sm hover:border-primary/30 transition-all duration-300 card-shine relative overflow-hidden">
+    <div class="flex flex-wrap gap-4 items-center">
+      <button onclick="loadScrims('all')" class="btn-ripple relative overflow-hidden px-6 py-3 bg-gradient-to-r from-primary to-green-400 text-dark font-display font-bold text-xs tracking-wider uppercase rounded-lg hover:shadow-lg hover:shadow-primary/50 hover:scale-105 transition-all duration-300">
+        <span class="relative z-10">All Scrims</span>
+      </button>
+      <button onclick="loadScrims('open')" class="btn-ripple relative overflow-hidden px-6 py-3 bg-gradient-to-r from-secondary to-blue-400 text-white font-display font-bold text-xs tracking-wider uppercase rounded-lg hover:shadow-lg hover:shadow-secondary/50 hover:scale-105 transition-all duration-300">
+        <span class="relative z-10">Open Only</span>
+      </button>
+
+      <div class="ml-auto flex gap-4 items-center">
+        <div id="scrimCount" class="font-display text-sm tracking-wider text-primary bg-primary/10 px-4 py-2 rounded-lg border border-primary/30">
+          Loading...
+        </div>
+        <button onclick="showCreateModal()" class="btn-ripple relative overflow-hidden px-6 py-3 bg-gradient-to-r from-primary to-green-400 text-dark font-display font-bold text-xs tracking-wider uppercase rounded-lg shadow-lg shadow-primary/30 hover:shadow-primary/50 hover:scale-105 transition-all duration-300">
+          <span class="relative z-10">+ Create</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scrims Grid -->
+  <div id="scrimsList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <!-- Loading State -->
+    <div class="col-span-full text-center py-16 animate-pulse-glow">
+      <div class="font-display text-sm tracking-[0.2em] text-primary uppercase">
+        Loading Arena...
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Create Scrim Modal -->
+<div id="createModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-50 animate-fade-in">
+  <div class="animate-slide-up bg-gradient-to-br from-card to-card/90 border border-primary/20 p-8 max-w-md w-full mx-4 rounded-2xl shadow-2xl shadow-primary/20">
+    <h2 class="font-display text-2xl font-bold text-primary mb-6 tracking-wider uppercase">
+      // Create Scrim
+    </h2>
+    <form id="createForm" class="space-y-4">
+      <div>
+        <label class="block font-display text-xs tracking-wider text-primary mb-2 uppercase">Host Team ID</label>
+        <input type="number" id="hostTeamId" required
+               class="w-full bg-primary/5 border border-primary/20 text-white px-4 py-3 rounded-lg font-body focus:outline-none focus:border-primary focus:bg-primary/10 focus:shadow-lg focus:shadow-primary/20 transition-all duration-300">
+      </div>
+      <div>
+        <label class="block font-display text-xs tracking-wider text-primary mb-2 uppercase">Start Time</label>
+        <input type="datetime-local" id="startTime" required
+               class="w-full bg-primary/5 border border-primary/20 text-white px-4 py-3 rounded-lg font-body focus:outline-none focus:border-primary focus:bg-primary/10 focus:shadow-lg focus:shadow-primary/20 transition-all duration-300">
+      </div>
+      <div>
+        <label class="block font-display text-xs tracking-wider text-primary mb-2 uppercase">Format</label>
+        <select id="format" required
+                class="w-full bg-primary/5 border border-primary/20 text-white px-4 py-3 rounded-lg font-body focus:outline-none focus:border-primary focus:bg-primary/10 focus:shadow-lg focus:shadow-primary/20 transition-all duration-300">
+          <option value="BO3">Best of 3</option>
+          <option value="BO5">Best of 5</option>
+        </select>
+      </div>
+      <div>
+        <label class="block font-display text-xs tracking-wider text-primary mb-2 uppercase">Requirements</label>
+        <input type="text" id="notes" placeholder="Mythic 100+"
+               class="w-full bg-primary/5 border border-primary/20 text-white px-4 py-3 rounded-lg font-body focus:outline-none focus:border-primary focus:bg-primary/10 focus:shadow-lg focus:shadow-primary/20 transition-all duration-300 placeholder:text-gray-500">
+      </div>
+      <div class="flex gap-3 pt-6">
+        <button type="submit" class="btn-ripple relative overflow-hidden flex-1 px-6 py-3 bg-gradient-to-r from-primary to-green-400 text-dark font-display font-bold text-xs tracking-wider uppercase rounded-lg hover:shadow-lg hover:shadow-primary/50 hover:scale-105 transition-all duration-300">
+          <span class="relative z-10">Launch</span>
+        </button>
+        <button type="button" onclick="hideCreateModal()" class="btn-ripple relative overflow-hidden flex-1 px-6 py-3 bg-gradient-to-r from-accent to-red-400 text-white font-display font-bold text-xs tracking-wider uppercase rounded-lg hover:shadow-lg hover:shadow-accent/50 hover:scale-105 transition-all duration-300">
+          <span class="relative z-10">Cancel</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Accept Scrim Modal -->
+<div id="acceptModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-50 animate-fade-in">
+  <div class="animate-slide-up bg-gradient-to-br from-card to-card/90 border border-primary/20 p-8 max-w-md w-full mx-4 rounded-2xl shadow-2xl shadow-primary/20">
+    <h2 class="font-display text-2xl font-bold text-primary mb-6 tracking-wider uppercase">
+      // Accept Challenge
+    </h2>
+    <form id="acceptForm" class="space-y-4">
+      <input type="hidden" id="acceptScrimId">
+      <div>
+        <label class="block font-display text-xs tracking-wider text-primary mb-2 uppercase">Your Team ID</label>
+        <input type="number" id="guestTeamId" required
+               class="w-full bg-primary/5 border border-primary/20 text-white px-4 py-3 rounded-lg font-body focus:outline-none focus:border-primary focus:bg-primary/10 focus:shadow-lg focus:shadow-primary/20 transition-all duration-300">
+      </div>
+      <div class="flex gap-3 pt-6">
+        <button type="submit" class="btn-ripple relative overflow-hidden flex-1 px-6 py-3 bg-gradient-to-r from-primary to-green-400 text-dark font-display font-bold text-xs tracking-wider uppercase rounded-lg hover:shadow-lg hover:shadow-primary/50 hover:scale-105 transition-all duration-300">
+          <span class="relative z-10">Accept</span>
+        </button>
+        <button type="button" onclick="hideAcceptModal()" class="btn-ripple relative overflow-hidden flex-1 px-6 py-3 bg-gradient-to-r from-accent to-red-400 text-white font-display font-bold text-xs tracking-wider uppercase rounded-lg hover:shadow-lg hover:shadow-accent/50 hover:scale-105 transition-all duration-300">
+          <span class="relative z-10">Decline</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  const API_BASE_URL = 'http://localhost:8080/api/scrims';
+
+  async function loadScrims(type = 'all') {
+      try {
+          const url = type === 'open' ? `${API_BASE_URL}/open` : API_BASE_URL;
+          const response = await fetch(url);
+          const scrims = await response.json();
+          displayScrims(scrims);
+          updateScrimCount(scrims.length, type);
+      } catch (error) {
+          console.error('Error loading scrims:', error);
+          document.getElementById('scrimsList').innerHTML = `
+              <div class="col-span-full text-center py-16">
+                  <div class="font-display text-sm tracking-[0.2em] text-accent uppercase">
+                      Connection Error
+                  </div>
+              </div>
+          `;
+      }
+  }
+
+  function updateScrimCount(count, type) {
+      const label = type === 'open' ? 'OPEN' : 'TOTAL';
+      document.getElementById('scrimCount').innerHTML = `${count} ${label} SCRIMS`;
+  }
+
+  function displayScrims(scrims) {
+      const container = document.getElementById('scrimsList');
+
+      if (scrims.length === 0) {
+          container.innerHTML = `
+              <div class="col-span-full text-center py-16">
+                  <div class="font-display text-sm tracking-[0.2em] text-primary/50 uppercase">
+                      No Active Scrims
+                  </div>
+              </div>
+          `;
+          return;
+      }
+
+      container.innerHTML = scrims.map((scrim, index) => {
+          const statusColors = {
+              'OPEN': 'bg-primary/15 text-primary border-primary',
+              'ACCEPTED': 'bg-secondary/15 text-secondary border-secondary',
+              'CANCELED': 'bg-accent/15 text-accent border-accent'
+          };
+
+          const startTime = new Date(scrim.startTime);
+          const now = new Date();
+          const timeLeft = startTime - now;
+          const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+          const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+
+          const staggerClass = `stagger-${(index % 9) + 1}`;
+
+          return `
+              <div class="opacity-0 animate-slide-up ${staggerClass} bg-gradient-to-br from-card to-card/80 border border-primary/10 rounded-xl p-6 backdrop-blur-sm hover:border-primary/30 hover:-translate-y-1 transition-all duration-300 card-shine relative overflow-hidden group">
+                  <!-- Header -->
+                  <div class="flex justify-between items-start mb-4">
+                      <div>
+                          <div class="font-display text-xs tracking-wider text-primary uppercase mb-1">
+                              Scrim #${scrim.id}
+                          </div>
+                          <div class="font-display text-2xl font-bold text-white">
+                              ${scrim.format}
+                          </div>
+                      </div>
+                      <span class="font-display text-[10px] font-bold px-3 py-1 rounded-md border ${statusColors[scrim.status]} tracking-widest uppercase">
+                          ${scrim.status}
+                      </span>
+                  </div>
+
+                  <!-- Teams -->
+                  <div class="mb-4">
+                      <div class="bg-primary/5 border-l-4 border-primary px-4 py-3 rounded-lg mb-2 hover:bg-primary/10 transition-all duration-300">
+                          <div class="font-display text-[10px] tracking-wider text-primary uppercase mb-1">Host</div>
+                          <div class="font-body text-lg font-semibold text-white mb-1">${scrim.hostTeam.name}</div>
+                          <div class="font-body text-sm text-gray-400">${scrim.hostTeam.owner} • ${scrim.hostTeam.rank}</div>
+                      </div>
+
+                      ${scrim.guestTeam ? `
+                          <div class="relative text-center my-3">
+                              <div class="absolute inset-0 flex items-center">
+                                  <div class="w-full border-t border-primary/30"></div>
+                              </div>
+                              <span class="relative inline-block px-4 bg-card font-display text-sm font-bold text-primary">VS</span>
+                          </div>
+                          <div class="bg-secondary/5 border-l-4 border-secondary px-4 py-3 rounded-lg hover:bg-secondary/10 transition-all duration-300">
+                              <div class="font-display text-[10px] tracking-wider text-secondary uppercase mb-1">Guest</div>
+                              <div class="font-body text-lg font-semibold text-white mb-1">${scrim.guestTeam.name}</div>
+                              <div class="font-body text-sm text-gray-400">${scrim.guestTeam.owner} • ${scrim.guestTeam.rank}</div>
+                          </div>
+                      ` : `
+                          <div class="relative text-center my-3">
+                              <div class="absolute inset-0 flex items-center">
+                                  <div class="w-full border-t border-primary/30"></div>
+                              </div>
+                              <span class="relative inline-block px-4 bg-card font-display text-sm font-bold text-primary">VS</span>
+                          </div>
+                          <div class="text-center py-6 font-display text-xs tracking-[0.2em] text-primary/40 uppercase">
+                              Awaiting Challenger
+                          </div>
+                      `}
+                  </div>
+
+                  <!-- Details -->
+                  <div class="space-y-2 mb-4 font-body text-sm text-gray-300">
+                      <div class="flex justify-between items-center">
+                          <span class="font-display text-xs tracking-wider text-primary uppercase">Start:</span>
+                          <span>${startTime.toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>
+                      </div>
+                      ${timeLeft > 0 && scrim.status !== 'CANCELED' ? `
+                          <div class="flex justify-between items-center">
+                              <span class="font-display text-xs tracking-wider text-primary uppercase">Time:</span>
+                              <span class="font-display text-xs bg-primary/10 text-primary px-3 py-1 rounded-md border border-primary/30">${hours}h ${minutes}m</span>
+                          </div>
+                      ` : ''}
+                      ${scrim.notes ? `
+                          <div class="flex justify-between items-center">
+                              <span class="font-display text-xs tracking-wider text-primary uppercase">Req:</span>
+                              <span>${scrim.notes}</span>
+                          </div>
+                      ` : ''}
+                  </div>
+
+                  <!-- Actions -->
+                  ${scrim.status === 'OPEN' && !scrim.guestTeam ? `
+                      <div class="flex gap-2">
+                          <button onclick="showAcceptModal(${scrim.id})" class="btn-ripple relative overflow-hidden flex-1 px-4 py-2.5 bg-gradient-to-r from-primary to-green-400 text-dark font-display font-bold text-xs tracking-wider uppercase rounded-lg hover:shadow-lg hover:shadow-primary/50 hover:scale-105 transition-all duration-300">
+                              <span class="relative z-10">Accept</span>
+                          </button>
+                          <button onclick="cancelScrim(${scrim.id})" class="btn-ripple relative overflow-hidden px-4 py-2.5 bg-gradient-to-r from-accent to-red-400 text-white font-display font-bold text-xs uppercase rounded-lg hover:shadow-lg hover:shadow-accent/50 hover:scale-105 transition-all duration-300">
+                              <span class="relative z-10">✕</span>
+                          </button>
+                      </div>
+                  ` : scrim.status === 'OPEN' || scrim.status === 'ACCEPTED' ? `
+                      <button onclick="cancelScrim(${scrim.id})" class="btn-ripple relative overflow-hidden w-full px-4 py-2.5 bg-gradient-to-r from-accent to-red-400 text-white font-display font-bold text-xs tracking-wider uppercase rounded-lg hover:shadow-lg hover:shadow-accent/50 hover:scale-105 transition-all duration-300">
+                          <span class="relative z-10">Cancel Scrim</span>
+                      </button>
+                  ` : ''}
+              </div>
+          `;
+      }).join('');
+  }
+
+  document.getElementById('createForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const data = {
+          hostTeamId: parseInt(document.getElementById('hostTeamId').value),
+          startTime: document.getElementById('startTime').value,
+          format: document.getElementById('format').value,
+          notes: document.getElementById('notes').value
+      };
+
+      try {
+          const response = await fetch(API_BASE_URL, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(data)
+          });
+
+          if (response.ok) {
+              hideCreateModal();
+              loadScrims();
+          }
+      } catch (error) {
+          console.error('Error creating scrim:', error);
+      }
+  });
+
+  document.getElementById('acceptForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const scrimId = document.getElementById('acceptScrimId').value;
+      const guestTeamId = parseInt(document.getElementById('guestTeamId').value);
+
+      try {
+          const response = await fetch(`${API_BASE_URL}/${scrimId}/accept`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ guestTeamId })
+          });
+
+          if (response.ok) {
+              hideAcceptModal();
+              loadScrims();
+          }
+      } catch (error) {
+          console.error('Error accepting scrim:', error);
+      }
+  });
+
+  async function cancelScrim(id) {
+      if (!confirm('Confirm cancellation?')) return;
+
+      try {
+          const response = await fetch(`${API_BASE_URL}/${id}`, { method: 'DELETE' });
+          if (response.ok) loadScrims();
+      } catch (error) {
+          console.error('Error canceling scrim:', error);
+      }
+  }
+
+  function showCreateModal() {
+      document.getElementById('createModal').classList.remove('hidden');
+      document.getElementById('createForm').reset();
+      const now = new Date();
+      now.setHours(now.getHours() + 1);
+      document.getElementById('startTime').value = now.toISOString().slice(0, 16);
+  }
+
+  function hideCreateModal() {
+      document.getElementById('createModal').classList.add('hidden');
+  }
+
+  function showAcceptModal(scrimId) {
+      document.getElementById('acceptScrimId').value = scrimId;
+      document.getElementById('acceptModal').classList.remove('hidden');
+      document.getElementById('acceptForm').reset();
+  }
+
+  function hideAcceptModal() {
+      document.getElementById('acceptModal').classList.add('hidden');
+  }
+
+  loadScrims();
+  setInterval(() => loadScrims(), 30000);
+</script>
+</body>
+</html>

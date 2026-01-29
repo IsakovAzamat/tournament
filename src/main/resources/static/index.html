@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scrims Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+<div class="container mx-auto px-4 py-8">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-800 mb-2">Scrims Management</h1>
+        <p class="text-gray-600">Управление тренировочными матчами</p>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+        <div class="flex gap-4 items-center">
+            <button onclick="loadScrims('all')" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition">
+                Все скримы
+            </button>
+            <button onclick="loadScrims('open')" class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition">
+                Открытые
+            </button>
+            <button onclick="showCreateModal()" class="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600 transition ml-auto">
+                + Создать скрим
+            </button>
+        </div>
+    </div>
+
+    <!-- Scrims List -->
+    <div id="scrimsList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Scrims will be loaded here -->
+    </div>
+</div>
+
+<!-- Create Scrim Modal -->
+<div id="createModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-xl p-8 max-w-md w-full mx-4">
+        <h2 class="text-2xl font-bold mb-6">Создать скрим</h2>
+        <form id="createForm" class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Host Team ID</label>
+                <input type="number" id="hostTeamId" required class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Дата и время</label>
+                <input type="datetime-local" id="startTime" required class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Формат</label>
+                <select id="format" required class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="BO3">BO3</option>
+                    <option value="BO5">BO5</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Примечания</label>
+                <input type="text" id="notes" placeholder="Mythic 100+" class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div class="flex gap-3 pt-4">
+                <button type="submit" class="flex-1 bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition">
+                    Создать
+                </button>
+                <button type="button" onclick="hideCreateModal()" class="flex-1 bg-gray-300 text-gray-700 py-2 rounded hover:bg-gray-400 transition">
+                    Отмена
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Accept Scrim Modal -->
+<div id="acceptModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-xl p-8 max-w-md w-full mx-4">
+        <h2 class="text-2xl font-bold mb-6">Принять скрим</h2>
+        <form id="acceptForm" class="space-y-4">
+            <input type="hidden" id="acceptScrimId">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Guest Team ID</label>
+                <input type="number" id="guestTeamId" required class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div class="flex gap-3 pt-4">
+                <button type="submit" class="flex-1 bg-green-500 text-white py-2 rounded hover:bg-green-600 transition">
+                    Принять
+                </button>
+                <button type="button" onclick="hideAcceptModal()" class="flex-1 bg-gray-300 text-gray-700 py-2 rounded hover:bg-gray-400 transition">
+                    Отмена
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    const API_BASE_URL = 'http://localhost:8080/api/scrims';
+
+    // Load scrims
+    async function loadScrims(type = 'all') {
+        try {
+            const url = type === 'open' ? `${API_BASE_URL}/open` : API_BASE_URL;
+            const response = await fetch(url);
+            const scrims = await response.json();
+            displayScrims(scrims);
+        } catch (error) {
+            console.error('Error loading scrims:', error);
+            alert('Ошибка загрузки скримов');
+        }
+    }
+
+    // Display scrims
+    function displayScrims(scrims) {
+        const container = document.getElementById('scrimsList');
+
+        if (scrims.length === 0) {
+            container.innerHTML = '<div class="col-span-full text-center text-gray-500 py-8">Нет доступных скримов</div>';
+            return;
+        }
+
+        container.innerHTML = scrims.map(scrim => {
+            const statusColors = {
+                'OPEN': 'bg-green-100 text-green-800',
+                'ACCEPTED': 'bg-blue-100 text-blue-800',
+                'CANCELED': 'bg-red-100 text-red-800'
+            };
+
+            const startTime = new Date(scrim.startTime).toLocaleString('ru-RU', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
+            return `
+                <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition">
+                    <div class="flex justify-between items-start mb-4">
+                        <h3 class="text-xl font-bold text-gray-800">#${scrim.id}</h3>
+                        <span class="px-3 py-1 rounded-full text-xs font-semibold ${statusColors[scrim.status]}">
+                            ${scrim.status}
+                        </span>
+                    </div>
+
+                    <div class="space-y-3 mb-4">
+                        <div>
+                            <p class="text-sm text-gray-500">Host Team</p>
+                            <p class="font-semibold text-gray-800">${scrim.hostTeam.name}</p>
+                            <p class="text-sm text-gray-600">${scrim.hostTeam.owner} • ${scrim.hostTeam.rank}</p>
+                        </div>
+
+                        ${scrim.guestTeam ? `
+                            <div class="border-t pt-3">
+                                <p class="text-sm text-gray-500">Guest Team</p>
+                                <p class="font-semibold text-gray-800">${scrim.guestTeam.name}</p>
+                                <p class="text-sm text-gray-600">${scrim.guestTeam.owner} • ${scrim.guestTeam.rank}</p>
+                            </div>
+                        ` : '<div class="border-t pt-3 text-sm text-gray-500 italic">Ожидание противника</div>'}
+                    </div>
+
+                    <div class="space-y-2 text-sm text-gray-600 mb-4">
+                        <p><span class="font-semibold">Формат:</span> ${scrim.format}</p>
+                        <p><span class="font-semibold">Время:</span> ${startTime}</p>
+                        ${scrim.notes ? `<p><span class="font-semibold">Требования:</span> ${scrim.notes}</p>` : ''}
+                    </div>
+
+                    ${scrim.status === 'OPEN' && !scrim.guestTeam ? `
+                        <div class="flex gap-2">
+                            <button onclick="showAcceptModal(${scrim.id})"
+                                class="flex-1 bg-green-500 text-white py-2 rounded hover:bg-green-600 transition text-sm">
+                                Принять
+                            </button>
+                            <button onclick="cancelScrim(${scrim.id})"
+                                class="flex-1 bg-red-500 text-white py-2 rounded hover:bg-red-600 transition text-sm">
+                                Отменить
+                            </button>
+                        </div>
+                    ` : scrim.status === 'OPEN' || scrim.status === 'ACCEPTED' ? `
+                        <button onclick="cancelScrim(${scrim.id})"
+                            class="w-full bg-red-500 text-white py-2 rounded hover:bg-red-600 transition text-sm">
+                            Отменить
+                        </button>
+                    ` : ''}
+                </div>
+            `;
+        }).join('');
+    }
+
+    // Create scrim
+    document.getElementById('createForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const data = {
+            hostTeamId: parseInt(document.getElementById('hostTeamId').value),
+            startTime: document.getElementById('startTime').value,
+            format: document.getElementById('format').value,
+            notes: document.getElementById('notes').value
+        };
+
+        try {
+            const response = await fetch(API_BASE_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (response.ok) {
+                hideCreateModal();
+                loadScrims();
+                alert('Скрим успешно создан!');
+            } else {
+                alert('Ошибка создания скрима');
+            }
+        } catch (error) {
+            console.error('Error creating scrim:', error);
+            alert('Ошибка создания скрима');
+        }
+    });
+
+    // Accept scrim
+    document.getElementById('acceptForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const scrimId = document.getElementById('acceptScrimId').value;
+        const guestTeamId = parseInt(document.getElementById('guestTeamId').value);
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/${scrimId}/accept`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ guestTeamId })
+            });
+
+            if (response.ok) {
+                hideAcceptModal();
+                loadScrims();
+                alert('Скрим принят!');
+            } else {
+                alert('Ошибка принятия скрима');
+            }
+        } catch (error) {
+            console.error('Error accepting scrim:', error);
+            alert('Ошибка принятия скрима');
+        }
+    });
+
+    // Cancel scrim
+    async function cancelScrim(id) {
+        if (!confirm('Вы уверены, что хотите отменить этот скрим?')) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/${id}`, {
+                method: 'DELETE'
+            });
+
+            if (response.ok) {
+                loadScrims();
+                alert('Скрим отменен');
+            } else {
+                alert('Ошибка отмены скрима');
+            }
+        } catch (error) {
+            console.error('Error canceling scrim:', error);
+            alert('Ошибка отмены скрима');
+        }
+    }
+
+    // Modal functions
+    function showCreateModal() {
+        document.getElementById('createModal').classList.remove('hidden');
+        document.getElementById('createForm').reset();
+    }
+
+    function hideCreateModal() {
+        document.getElementById('createModal').classList.add('hidden');
+    }
+
+    function showAcceptModal(scrimId) {
+        document.getElementById('acceptScrimId').value = scrimId;
+        document.getElementById('acceptModal').classList.remove('hidden');
+        document.getElementById('acceptForm').reset();
+    }
+
+    function hideAcceptModal() {
+        document.getElementById('acceptModal').classList.add('hidden');
+    }
+
+    // Load scrims on page load
+    loadScrims();
+</script>
+</body>
+</html>
