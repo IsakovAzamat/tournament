@@ -19,6 +19,8 @@ public class ScrimService {
     private final ScrimRepository scrimRepository;
     private final TeamRepository teamRepository;
 
+
+    //создать прак
     public Scrim createScrim(CreateScrimRequest request) {
 
         Team hostTeam = teamRepository.findById(request.getHostTeamId()).orElseThrow(() -> new RuntimeException("Team not found"));
@@ -33,15 +35,20 @@ public class ScrimService {
         return scrimRepository.save(scrim);
     }
 
+
+    //показ всех праков
     public List<Scrim> getAllScrim(){
         return scrimRepository.findAll();
     }
 
 
+    //показ открытых праков
     public List<Scrim> getScrimsByStatusOpen(){
         return scrimRepository.findByStatus(ScrimStatus.OPEN);
     }
 
+
+    //принять прак
     public Scrim acceptScrim(long scrimId, long guestTeamId){
         Scrim scrim = scrimRepository.findById(scrimId).orElseThrow(() -> new RuntimeException("Scrim not found"));
 
@@ -61,6 +68,8 @@ public class ScrimService {
         return scrimRepository.save(scrim);
     }
 
+
+    //отменить прак
     public void cancelScrim(Long scrimId){
         Scrim scrim = scrimRepository.findById(scrimId).orElseThrow(() -> new RuntimeException("Scrim not found"));
 

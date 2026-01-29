@@ -1,5 +1,6 @@
 package com.example.mlbb.entity;
 
+import com.example.mlbb.enums.Tier;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -18,17 +19,23 @@ public class Team {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
-    private String rank;
-    private String image;
-    private String owner;
+    private int rating;
+
+    @Enumerated(EnumType.STRING)
+    private Tier tier;
+    private String imageUrl;
+
+    @ManyToOne
+    @JoinColumn(name = "owner_id")
+    private User owner;
 
     @Override
     public String toString() {
         return "Team{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
-                ", owner='" + owner + '\'' +
-                ", rank='" + rank + '\'' +
+                ", rating=" + rating +
+                ", tier=" + tier +
                 '}';
     }
 }

@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/student_app
+    url: jdbc:postgresql://localhost:5432/nexplay
     username: postgres
     password: Azamat2003!
 
