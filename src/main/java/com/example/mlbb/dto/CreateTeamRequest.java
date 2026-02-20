@@ -7,5 +7,5 @@ import lombok.Setter;
 @Setter
 public class CreateTeamRequest {
     private String name;
-    private String imageUrl;
+    private String logoUrl;
 }

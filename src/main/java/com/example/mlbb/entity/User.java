@@ -1,16 +1,13 @@
 package com.example.mlbb.entity;
 
+import com.example.mlbb.enums.SystemRole;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -35,7 +32,13 @@ public class User {
     @JsonIgnore
     private String password;
 
-    @OneToMany(mappedBy = "owner")
-    @JsonManagedReference
-    private List<Team> teams = new ArrayList<>();
+    @Column(nullable = false, unique = true)
+    private Integer mlbbId;
+
+    @Column(nullable = false)
+    private SystemRole role = SystemRole.USER;
+
+//    @OneToMany(mappedBy = "owner")
+//    @JsonManagedReference
+//    private List<Team> teams = new ArrayList<>();
 }
