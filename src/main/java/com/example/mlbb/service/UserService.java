@@ -22,6 +22,10 @@ public class UserService {
         return userRepository.findAll();
     }
 
+    public String getUserByMlbbId(Long id){
+        return String.valueOf(userRepository.findById(id));
+    }
+
     @Transactional
     public User registerUser(RegisterRequest request) {
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {

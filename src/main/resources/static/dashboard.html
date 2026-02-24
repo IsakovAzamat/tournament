@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>MLBB Праки — Доска</title>
+
+    <style>
+        :root{
+            --bg1:#0b1020;
+            --bg2:#0a0f1a;
+            --card:rgba(255,255,255,.06);
+            --border:rgba(255,255,255,.14);
+            --text:#f3f4f6;
+            --muted:#94a3b8;
+            --accent:#fbbf24;
+            --accent2:#f59e0b;
+            --green:#22c55e;
+            --red:#f87171;
+            --radius:18px;
+            --shadow:0 20px 60px rgba(0,0,0,.55);
+            --font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+        }
+
+        *{box-sizing:border-box}
+        body{
+            margin:0;
+            font-family:var(--font);
+            color:var(--text);
+            background:
+                    radial-gradient(1000px 500px at 15% 10%, rgba(251,191,36,.2), transparent 55%),
+                    radial-gradient(900px 500px at 85% 15%, rgba(99,102,241,.15), transparent 55%),
+                    linear-gradient(180deg,var(--bg1),var(--bg2));
+            padding:30px 15px;
+        }
+
+        /* Контейнер */
+        .container{
+            max-width:1100px;
+            margin:auto;
+        }
+
+        /* Профиль */
+        .profile-bar{
+            background:var(--card);
+            border:1px solid var(--border);
+            border-radius:var(--radius);
+            padding:18px 25px;
+            margin-bottom:25px;
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            backdrop-filter:blur(14px);
+            box-shadow:var(--shadow);
+        }
+
+        .user-info b{
+            color:var(--accent);
+        }
+
+        .logout-link{
+            color:var(--red);
+            text-decoration:none;
+            font-weight:600;
+        }
+
+        /* Сетка */
+        .main-grid{
+            display:grid;
+            grid-template-columns: 360px 1fr;
+            gap:25px;
+        }
+
+        .card{
+            background:var(--card);
+            border:1px solid var(--border);
+            border-radius:var(--radius);
+            padding:22px;
+            backdrop-filter:blur(14px);
+            box-shadow:var(--shadow);
+        }
+
+        h3{
+            margin:0 0 15px;
+            color:var(--accent);
+        }
+
+        /* Поля */
+        label{
+            font-size:13px;
+            color:var(--muted);
+            margin-top:10px;
+            display:block;
+        }
+
+        select, textarea{
+            width:100%;
+            margin-top:6px;
+            padding:10px;
+            border-radius:10px;
+            border:1px solid var(--border);
+            background:#0f172a;
+            color:white;
+            font-size:14px;
+        }
+
+        textarea{height:80px;resize:none}
+
+        /* Кнопки */
+        button{
+            border:none;
+            cursor:pointer;
+            border-radius:12px;
+            font-weight:600;
+            transition:.2s;
+        }
+
+        .btn-create{
+            margin-top:15px;
+            padding:12px;
+            width:100%;
+            background:linear-gradient(135deg,var(--accent),var(--accent2));
+            color:black;
+        }
+
+        .btn-create:hover{filter:brightness(1.05)}
+
+        .btn-refresh{
+            background:transparent;
+            border:1px solid var(--border);
+            color:var(--muted);
+            padding:6px 12px;
+        }
+
+        .board-item{
+            background:var(--card);
+            border:1px solid var(--border);
+            border-left:4px solid var(--accent);
+            padding:15px;
+            border-radius:14px;
+            margin-bottom:15px;
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            transition:.2s;
+        }
+
+        .board-item:hover{
+            transform:translateY(-3px);
+        }
+
+        .format-badge{
+            background:#334155;
+            padding:4px 10px;
+            border-radius:8px;
+            font-size:12px;
+            color:var(--accent);
+            font-weight:bold;
+        }
+
+        .match-info h4{
+            margin:5px 0 5px;
+        }
+
+        .match-info p{
+            margin:0;
+            color:var(--muted);
+            font-size:14px;
+        }
+
+        .btn-accept{
+            background:var(--green);
+            color:white;
+            padding:8px 14px;
+        }
+
+        .btn-accept:disabled{
+            background:#475569;
+            cursor:not-allowed;
+        }
+
+        .empty{
+            color:#475569;
+            margin-top:20px;
+        }
+
+        @media(max-width:900px){
+            .main-grid{
+                grid-template-columns:1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <div class="profile-bar">
+        <div class="user-info">
+            Привет, <b id="u-name">...</b> (MLBB ID: <span id="u-id">...</span>)
+        </div>
+        <a href="#" onclick="logout()" class="logout-link">Выйти</a>
+    </div>
+
+    <div class="main-grid">
+
+        <!-- Создание прака -->
+        <div class="card">
+            <h3>Создать прак</h3>
+
+            <label>Формат матча</label>
+            <select id="p-format">
+                <option value="BO1">Best of 1</option>
+                <option value="BO3">Best of 3</option>
+                <option value="BO5">Best of 5</option>
+            </select>
+
+            <label>Описание</label>
+            <textarea id="p-desc"
+                      placeholder="Миф 100+, сервер КЗ, ищем сильный стак..."></textarea>
+
+            <button class="btn-create" onclick="createPrac()">Выставить</button>
+            <p id="msg" style="text-align:center;font-size:13px;margin-top:8px;"></p>
+        </div>
+
+        <!-- Доска -->
+        <div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                <h3 style="margin:0">Доска объявлений</h3>
+                <button onclick="loadBoard()" class="btn-refresh">Обновить ↻</button>
+            </div>
+
+            <div id="board-container"></div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    let currentUsername = "";
+
+    async function init(){
+        await loadProfile();
+        await loadBoard();
+    }
+
+    async function loadProfile(){
+        const res = await fetch('/api/auth/me');
+        if(res.status===401) window.location.href='/login.html';
+        const data = await res.json();
+        currentUsername=data.username;
+        document.getElementById('u-name').innerText=data.username;
+        document.getElementById('u-id').innerText=data.mlbbId;
+    }
+
+    async function createPrac(){
+        const format=document.getElementById('p-format').value;
+        const description=document.getElementById('p-desc').value;
+
+        const res=await fetch('/api/pracs/create',{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({format,description})
+        });
+
+        if(res.ok){
+            document.getElementById('p-desc').value="";
+            showMsg("Опубликовано!","lightgreen");
+            loadBoard();
+        }else{
+            showMsg("Ошибка создания","coral");
+        }
+    }
+
+    async function loadBoard(){
+        const res=await fetch('/api/pracs/board');
+        const pracs=await res.json();
+        const container=document.getElementById('board-container');
+        container.innerHTML="";
+
+        if(pracs.length===0){
+            container.innerHTML="<p class='empty'>Пока никто не ищет игру...</p>";
+            return;
+        }
+
+        pracs.forEach(p=>{
+            const isMine=p.creatorName===currentUsername;
+            container.innerHTML+=`
+      <div class="board-item">
+        <div class="match-info">
+          <span class="format-badge">${p.format}</span>
+          <h4>${p.creatorName}</h4>
+          <p>${p.description||"Без описания"}</p>
+        </div>
+        <button class="btn-accept"
+          ${isMine?"disabled":""}
+          onclick="acceptPrac(${p.id})">
+          ${isMine?"Ваш прак":"Принять"}
+        </button>
+      </div>`;
+        });
+    }
+
+    async function acceptPrac(id) {
+        const res = await fetch(`/api/pracs/${id}/accept`, { method: 'POST' });
+        if (res.ok) {
+            alert("Вы приняли вызов! Свяжитесь с создателем.");
+            loadBoard();
+        } else {
+            alert(await res.text());
+        }
+    }
+
+    function showMsg(t,c){
+      const m=document.getElementById('msg');
+      m.innerText=t;
+      m.style.color=c;
+    }
+
+    async function logout(){
+      await fetch('/api/auth/logout',{method:'POST'});
+      window.location.href='/login.html';
+    }
+
+init();
+
+</script>
+
+</body>
+</html>

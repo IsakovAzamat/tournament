@@ -60,7 +60,7 @@ public class MatchService {
         }
 
         match.setTeamB(guestTeam);
-        match.setStatus(MatchStatus.WAITING_REPORTS);
+        match.setStatus(MatchStatus.WAITING);
 
         return matchRepository.save(match);
     }

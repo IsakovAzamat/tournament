@@ -233,6 +233,7 @@
       });
 
       if (response.ok) {
+        window.location.href = '/dashboard.html';
         setMsg('ok', 'Вы вошли! Можно делать защищенные запросы.');
       } else {
         setMsg('bad', 'Неверный логин или пароль');

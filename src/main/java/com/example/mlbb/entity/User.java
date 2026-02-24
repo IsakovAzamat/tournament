@@ -35,8 +35,4 @@ public class User {
 
     @Column(nullable = false)
     private SystemRole role = SystemRole.USER;
-
-//    @OneToMany(mappedBy = "owner")
-//    @JsonManagedReference
-//    private List<Team> teams = new ArrayList<>();
 }

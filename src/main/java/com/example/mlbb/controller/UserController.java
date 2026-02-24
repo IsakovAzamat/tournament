@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -19,6 +20,11 @@ public class UserController {
     @GetMapping
     public List<User> getUsers(){
         return userService.getAllUser();
+    }
+
+    @GetMapping("/me")
+    public String getUserById(@RequestParam Long id){
+        return userService.getUserByMlbbId(id);
     }
 
     @PostMapping("/register")
